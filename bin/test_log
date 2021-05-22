@@ -1,0 +1,2 @@
+[ERROR] src/dare_ibv.c/68/dare_init_ib_device() No HCAs available
+[ERROR] src/dare_server.c/392/init_network_cb() Cannot init IB device

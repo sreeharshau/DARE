@@ -273,6 +273,7 @@ void dare_server_shutdown()
 static int
 init_server_data()
 {
+    // printf("dare_server.c: In init_server_data()\n");
     int rc;
     uint8_t i;
 
@@ -340,6 +341,7 @@ init_server_data()
 static void
 free_server_data()
 {
+    // printf("dare_server.c: In free_server_data()\n");
     ep_db_free(&data.endpoints);
     
     if (NULL != data.sm) {
@@ -384,6 +386,7 @@ free_server_data()
 static void
 init_network_cb( EV_P_ ev_timer *w, int revents )
 {
+    // printf("dare_server.c: In init_network_cb()\n");
     int rc; 
     
     /* Init IB device */
@@ -456,6 +459,7 @@ shutdown:
 static void
 join_cluster_cb( EV_P_ ev_timer *w, int revents )
 {
+    // printf("dare_server.c: In join_cluster_cb()\n");
     int rc;
     
     rc = dare_ib_join_cluster();
@@ -485,6 +489,7 @@ static void
 exchange_rc_info_cb( EV_P_ ev_timer *w, int revents )
 {
     int rc;
+    // printf("dare_server.c: In exchange_rc_info_cb()\n");
     
     rc = dare_ib_exchange_rc_info();
     if (0 != rc) {
@@ -512,6 +517,7 @@ shutdown:
 static void
 update_rc_info_cb( EV_P_ ev_timer *w, int revents )
 {
+    // printf("dare_server.c: In update_rc_info_cb()\n");
     int rc;
     rc = dare_ib_update_rc_info();
     if (0 != rc) {
@@ -536,6 +542,7 @@ static void
 get_replicated_vote_cb( EV_P_ ev_timer *w, int revents )
 {
     int rc;
+    // printf("dare_server.c: In get_replicated_vote_cb()\n");
     
     /* Set up starting SID: leader of term 0 (not existent) */
     SID_SET_TERM(data.ctrl_data->sid, 0);
@@ -586,6 +593,7 @@ send_sm_request_cb( EV_P_ ev_timer *w, int revents )
 {
     int rc;
     
+    // printf("dare_server.c: In send_sm_request_cb()\n");
     text(log_fp, "\n>> RECOVER SM <<\n");
     rc = dare_ib_send_sm_request();
     if (0 != rc) {
@@ -610,6 +618,7 @@ shutdown:
 static void
 poll_sm_requests()
 {
+    // printf("dare_server.c: In poll_sm_requests()\n");
     int rc;
     uint8_t i, size = get_group_size(data.config);
     snapshot_t *snapshot;
@@ -668,6 +677,7 @@ poll_sm_requests()
 static void 
 poll_sm_reply()
 {
+    // printf("dare_server.c: In poll_sm_reply()\n");
     int rc;
     uint8_t target, size = get_group_size(data.config);
     sm_rep_t *reply;
@@ -720,6 +730,7 @@ poll_sm_reply()
 static void
 recover_log_cb( EV_P_ ev_timer *w, int revents )
 {
+    // printf("dare_server.c: In recover_log_cb()\n");
     int rc;
     
     text(log_fp, "\n>> RECOVER LOG <<\n");
@@ -774,6 +785,7 @@ shutdown:
 static void
 to_adjust_cb( EV_P_ ev_timer *w, int revents )
 {
+    // printf("dare_server.c: In to_adjust_cb()\n");
     static uint64_t total_count = 0;
     static uint64_t fp_count = 0;
 
@@ -833,6 +845,7 @@ to_adjust_cb( EV_P_ ev_timer *w, int revents )
 static void
 hb_receive_cb( EV_P_ ev_timer *w, int revents )
 {   
+    // printf("dare_server.c: In hb_receive_cb()\n");
     int rc;
     int timeout = 1;
     uint64_t hb;
@@ -939,6 +952,7 @@ static void
 hb_send_cb( EV_P_ ev_timer *w, int revents )
 {
     int rc;
+    // printf("dare_server.c: In hb_send_cb()\n");
     static ev_tstamp last_hb = 0;
     
     /* Check if any server sent an HB reply; if that's the case, we need 
@@ -1014,6 +1028,7 @@ shutdown:
 static void
 poll_cb( EV_P_ ev_idle *w, int revents )
 {
+    // printf("dare_server.c: In poll_cb()\n");
     polling();  
 }
 
@@ -1023,6 +1038,7 @@ poll_cb( EV_P_ ev_idle *w, int revents )
 static void
 polling()
 {
+    // printf("dare_server.c: In polling()\n");
     /* Check if the termination flag was set */
     if (dare_state & TERMINATE) {
         dare_server_shutdown();
@@ -1139,6 +1155,7 @@ polling()
 static void
 poll_ud()
 {
+    // printf("dare_server.c: Inside poll_ud()\n");
     uint8_t type = dare_ib_poll_ud_queue();
     if (MSG_ERROR == type) {
         error(log_fp, "Cannot get UD message\n");
@@ -1148,7 +1165,7 @@ poll_ud()
         case CFG_REPLY:
         {
             dare_state |= JOINED;
-            info(log_fp, "I got accepted into the cluster: idx=%"PRIu8"\n", 
+            printf("I got accepted into the cluster: idx=%"PRIu8"\n", 
                 data.config.idx); PRINT_CID_(data.config.cid);
             
             /* Start RC discovery */
@@ -1164,9 +1181,9 @@ poll_ud()
              * gets either a new RC_SYN or a new RC_ACK after a majority */
             if (!(dare_state & RC_ESTABLISHED)) {
                 dare_state |= RC_ESTABLISHED;
-                info(log_fp, "\n>> Connection establish <<\n");
-                text(log_fp, "My SID is: "); PRINT_SID_(data.ctrl_data->sid);
-                text(log_fp, "My CID is: "); PRINT_CID_(data.config.cid);
+                printf("\n>> Connection establish <<\n");
+                printf("My SID is: "); PRINT_SID_(data.ctrl_data->sid);
+                printf("My CID is: "); PRINT_CID_(data.config.cid);
                 print_rc_info();
 
                 /* For initial start-up, skip recovery */
@@ -1192,6 +1209,10 @@ poll_ud()
                     ev_timer_again(data.loop, &timer_event);
                 }
             }
+            // default:
+            // {
+            //     printf("Unknown type: %d", type);
+            // }
             break;
         }
     }
@@ -1203,7 +1224,8 @@ poll_ud()
  */
 static void 
 check_failure_count()
-{
+{  
+    // printf("dare_server.c: In check_failure_count()");
     uint8_t i, connections = 0, 
             size = get_group_size(data.config);
 
@@ -1281,6 +1303,7 @@ hb_timeout()
 static void
 start_election()
 {
+    // printf("dare_server.c: In start_election()");
     int rc, i;
     
     /* Get the latest SID */
@@ -1344,6 +1367,7 @@ start_election()
 static void 
 poll_vote_count()
 {
+    // printf("dare_server.c: In poll_vote_count()");
     int rc;
     uint8_t vote_count[2];
     vote_count[0] = 1;
@@ -1543,6 +1567,7 @@ become_leader:
 static void
 poll_vote_requests()
 {
+    // printf("dare_server.c: In poll_vote_requests()");
     int rc;
     uint8_t i, size = get_group_size(data.config);
     uint64_t new_sid;
@@ -1768,6 +1793,7 @@ text(log_fp, "   Best [idx=%"PRIu64"; term=%"PRIu64"]\n", best_request.index, be
 static void 
 commit_new_entries()
 {
+    // printf("dare_server.c: In commit_new_entries()\n");
     int rc;
  
     if (log_offset_end_distance(data.log, data.log->commit)) {
@@ -1812,6 +1838,7 @@ commit_new_entries()
 static void 
 apply_committed_entries()
 {
+    // printf("dare_server.c: In apply_committed_entries()\n");
     int rc;
     int once = 0;
     
@@ -1978,6 +2005,7 @@ apply_next_entry:
 static void
 prune_log_cb( EV_P_ ev_timer *w, int revents )
 {
+    // printf("dare_server.c: In prune_log_cb()");
     int rc;
     rc = log_pruning();
     if (0 != rc) {
@@ -1998,6 +2026,7 @@ shutdown:
 static int
 log_pruning()
 {
+    // printf("dare_server.c: In log_pruning()");
     int rc;
     uint8_t i, size;
     
@@ -2074,6 +2103,7 @@ force_log_pruning()
     uint8_t i, size, target;
     uint64_t log_size = log_offset_end_distance(data.log, data.log->head);
 
+    // printf("dare_server.c: In force_log_pruning()");
     if (log_size < 0.75 * data.log->len) 
         return;
     
@@ -2135,6 +2165,7 @@ force_log_pruning()
 static void 
 poll_config_entries()
 {
+    // printf("dare_server.c: In poll_config_entries()\n");
     uint64_t head_offset = data.log->head;
     uint64_t offset = data.config.cid_offset;
     uint64_t commit = data.log->commit;
@@ -2194,6 +2225,7 @@ poll_config_entries()
 static int 
 update_cid( dare_cid_t cid )
 {
+    // printf("dare_server.c: In update_cid()\n");
     if (equal_cid(data.config.cid, cid)) {
         return 1;
     }
@@ -2238,6 +2270,7 @@ update_cid( dare_cid_t cid )
 static void
 get_loggp_params()
 {
+    // printf("dare_server.c: In get_logp_params()\n");
     int rc, i, poll_count, n, write = 1;
     uint32_t size, mtu = 4096;
     double usecs, model, prtt0, prttn, delay;
@@ -2515,6 +2548,7 @@ info(log_fp, "   # (%i) RDMA %s: o = %lf usecs\n\n", i, (write ? "Write" : "Read
  */
 void server_to_follower()
 {   
+    // printf("dare_server.c: In server_to_follower()\n");
     int rc;
 
     /* Stop HB mechanism for the moment ... */
@@ -2565,6 +2599,7 @@ void server_to_follower()
 
 int server_update_sid( uint64_t new_sid, uint64_t old_sid )
 {
+    // printf("dare_server.c: In server_update_sid()\n");
     int rc;
     rc = __sync_bool_compare_and_swap(&(data.ctrl_data->sid),
                                     old_sid, new_sid);
@@ -2583,6 +2618,7 @@ int is_leader()
 static void 
 int_handler(int dummy) 
 {
+    // printf("dare_server.c: In SIGINT handler()\n");
     info_wtime(log_fp,"SIGINT detected; shutdown\n");
     //dare_server_shutdown();
     dare_state |= TERMINATE;

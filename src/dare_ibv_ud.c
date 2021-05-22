@@ -187,12 +187,14 @@ struct ibv_ah* ud_ah_create( uint16_t dlid )
 static int
 mcast_ah_create()
 {
+    // printf("dare_ibv_ud.c: In mcast_ah_create()\n");
     struct ibv_ah *ah = NULL;
     struct ibv_ah_attr ah_attr;
      
     memset(&ah_attr, 0, sizeof(ah_attr));
     // ah_attr.dlid: If destination is in same subnet, the LID of the 
     // port to which the subnet delivers the packets to. 
+    printf("MLID: %d\n", IBDEV->mlid);
     ah_attr.dlid          = IBDEV->mlid; // multicast
     ah_attr.sl            = 0;
     ah_attr.src_path_bits = 0;
@@ -431,18 +433,18 @@ ud_qp_create()
     info(log_fp, "# mcast addr: [%s]\n", global_mgid);
 
     //Uncomment the following code to see the contents of raw
-    // printf("\nThe GLOBAL raw address is\n");
-    // int i;
-    // for(i=0;i<16;i++)
-    // printf("0x%02x ",raw[i]);
-    // printf("\n");
+    printf("\nThe GLOBAL raw address is\n");
+    int i;
+    for(i=0;i<16;i++)
+    printf("0x%02x ",raw[i]);
+    printf("\n");
     
-    //printf("\n The Global MGID is set to : % \n", raw);
+    // printf("\n The Global MGID is set to : % \n", raw);
    
     memcpy(&(IBDEV->mgid.raw), &raw, sizeof(raw));
     // castor: 0xC003
     // euler: 0xC001
-    IBDEV->mlid = 0xc001;
+    IBDEV->mlid = 0xc014;
     //IBDEV->mlid = 0xc003;
     rc = ibv_attach_mcast(qp, 
                           &IBDEV->mgid, 
@@ -727,14 +729,15 @@ Assuming that we connect UD QP in node X and UD QP in node Y and each side creat
 static int 
 mcast_send_message( uint32_t len )
 {
+    // printf("dare_ibv_ud.c: In mcast_send_message()\n");
     int rc;
     struct ibv_sge sg;
     struct ibv_send_wr wr;
     struct ibv_send_wr *bad_wr = NULL;
     
-    text(log_fp, "## Sending mcast message (len=%"PRIu32")\n", len);
+    // printf("## Sending mcast message (len=%"PRIu32")\n", len);
     if (len > mtu_value(IBDEV->mtu)) {
-        debug(log_fp, "Length = %"PRIu32"; cannot send more than %"PRIu32" bytes\n", 
+        printf("Length = %"PRIu32"; cannot send more than %"PRIu32" bytes\n", 
               len, mtu_value(IBDEV->mtu));
         len = mtu_value(IBDEV->mtu);
     }
@@ -1168,7 +1171,7 @@ handle_message_from_client( struct ibv_wc *wc, ud_hdr_t *ud_hdr )
         case RC_SYN:
         {
             /* First message of the 3-way handshake protocol */
-            //info(log_fp, ">> Received RC_SYN from lid%"PRIu16"\n", wc->slid);
+            printf(">> Received RC_SYN from lid%"PRIu16"\n", wc->slid);
             type = MSG_NONE;
             rc = handle_rc_syn(wc, (rc_syn_t*)ud_hdr);
             if (0 != rc) {
@@ -1483,8 +1486,8 @@ int ud_exchange_rc_info()
     request->mtu           = IBDEV->mtu;
     request->idx           = SRV_DATA->config.idx;
 
-//info(log_fp, "RC SYN: LOG MR=[%"PRIu64"; %"PRIu32"]; LOG MR=[%"PRIu64"; %"PRIu32"]\n",
-//     request->log_rm.raddr, request->log_rm.rkey, request->ctrl_rm.raddr, request->ctrl_rm.rkey);
+        // printf("RC SYN: LOG MR=[%"PRIu64"; %"PRIu32"]; LOG MR=[%"PRIu64"; %"PRIu32"]\n",
+    // request->log_rm.raddr, request->log_rm.rkey, request->ctrl_rm.raddr, request->ctrl_rm.rkey);
    
     
     request->size = get_extended_group_size(SRV_DATA->config);
@@ -1492,11 +1495,11 @@ int ud_exchange_rc_info()
         ep = (dare_ib_ep_t*)SRV_DATA->config.servers[i].ep;
         qpns[j] = ep->rc_ep.rc_qp[LOG_QP].qp->qp_num;
         qpns[j+1] = ep->rc_ep.rc_qp[CTRL_QP].qp->qp_num;
-//info(log_fp, "   [%d] LOG_QPN=%"PRIu32"; CTRL_QPN=%"PRIu32"\n", i, qpns[j], qpns[j+1]);
+        printf("  [%d] LOG_QPN=%"PRIu32"; CTRL_QPN=%"PRIu32"\n", i, qpns[j], qpns[j+1]);
     }
     len += 2*request->size*sizeof(uint32_t);
 
-    //info(log_fp, ">> Sending RC SYN (mcast)\n");
+    // printf(">> Sending RC SYN (mcast)\n");
     return mcast_send_message(len);
 }
 
@@ -1529,6 +1532,7 @@ int ud_update_rc_info()
 static int 
 handle_rc_syn(struct ibv_wc *wc, rc_syn_t *msg)
 {
+    // printf("dare_ibv_ud.c: In handle_rc_syn()\n");
     int rc;
     dare_ib_ep_t *ep;
     uint32_t *qpns = (uint32_t*)msg->data;
@@ -1547,8 +1551,8 @@ handle_rc_syn(struct ibv_wc *wc, rc_syn_t *msg)
     if (0 == ep->rc_connected) {
         /* Create UD endpoint from WC */
         wc_to_ud_ep(&ep->ud_ep, wc);
-        text(log_fp, "New SYN msg from server %"PRIu8" with lid=%"PRIu16"\n", 
-                msg->idx, ep->ud_ep.lid);
+        // text(log_fp, "New SYN msg from server %"PRIu8" with lid=%"PRIu16"\n", 
+                // msg->idx, ep->ud_ep.lid);
         
         /* Set log and ctrl memory region info */
         ep->rc_ep.rmt_mr[LOG_QP].raddr  = msg->log_rm.raddr;
@@ -1898,6 +1902,7 @@ int ud_apply_cmd_locally()
  */
 int ud_create_clt_request()
 {
+    // printf("dare_ibv_ud.c: In ud_create_clt_request()\n");
     size_t bytes_read;
     kvs_cmd_t *kvs_cmd;
     
@@ -1994,6 +1999,7 @@ send_request:
     if (CLT_TYPE_RTRACE == CLT_DATA->input->clt_type) {
         HRT_GET_TIMESTAMP(CLT_DATA->t1);
     }
+    printf("dare_ibv_ud.c: Sending clt_request()\n");
     return send_clt_request(len);
 }
 

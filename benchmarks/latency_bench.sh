@@ -67,7 +67,7 @@ StopDare() {
 
 DAREDIR=""
 OPCODE="put"
-server_count=3
+server_count=1
 
 for arg in "$@"
 do
@@ -76,10 +76,10 @@ do
         usage
         exit 1
         ;;
-    --scount=*)
-        server_count=`echo $arg | sed -e 's/--scount=//'`
-        server_count=`eval echo ${server_count}`    # tilde and variable expansion
-        ;;
+    #--scount=*)
+     #   server_count=`echo $arg | sed -e 's/--scount=//'`
+      #  server_count=`eval echo ${server_count}`    # tilde and variable expansion
+      #  ;;
     --dare=*)
         DAREDIR=`echo $arg | sed -e 's/--dare=//'`
         DAREDIR=`eval echo ${DAREDIR}`    # tilde and variable expansion
@@ -97,7 +97,8 @@ if [[ "x$DAREDIR" == "x" ]]; then
 fi
 
 # list of allocated nodes, e.g., nodes=(n112002 n112001 n111902)
-nodes=(`cat $PBS_NODEFILE | tr ' ' '\n' | awk '!u[$0]++'`)
+# nodes=(`cat $PBS_NODEFILE | tr ' ' '\n' | awk '!u[$0]++'`)
+nodes=('node0' 'node1')
 node_count=${#nodes[@]}
 echo "Allocated ${node_count} nodes:" > nodes
 for ((i=0; i<${node_count}; ++i)); do
@@ -105,7 +106,8 @@ for ((i=0; i<${node_count}; ++i)); do
 done
 
 if [ $server_count -gt $(($node_count-1)) -o $server_count -le 0 ] ; then
-    ErrorAndExit "0 < #servers <= ${node_count}; --scount"
+    echo "In Error"
+    ErrorAndExit "0 < #servers <= ${node_count}; --scount; $server_count"
 fi
 
 # OP code

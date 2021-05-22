@@ -1,0 +1,14 @@
+# HCA mlx4_0 supports atomic operations
+# max_qp_wr=16351
+# max_qp_rd_atom=16
+# HCA mlx4_0 supports Shared Receive Queues.
+# HCA mlx4_0 supports multicast groups.
+# HCA mlx4_0 supports maximum 16351 WRs.
+# pkey_value = 65535 for index 0
+# ib_port_attr.active_mtu = 5 (4096 bytes)
+# device->mtu = 4 (2048 bytes)
+# device->port_num = 1
+# ib_port_attr.lid = 140
+ipv6_addr: [ff12:4001:ffff::a14:2]
+# mcast addr: [ff12:4001:ffff::a14:2]
+SIGINT detected; shutdown

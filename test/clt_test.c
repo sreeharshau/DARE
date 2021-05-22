@@ -163,7 +163,8 @@ int main(int argc, char* argv[])
             exit(1);
         }
     }
-    
+
+    printf("Starting Client:\n");
     rc = dare_client_init(&input);
     if (0 != rc) {
         fprintf(input.log, "Cannot init client\n");
