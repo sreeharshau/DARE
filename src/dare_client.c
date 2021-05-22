@@ -139,7 +139,7 @@ int dare_client_init( dare_client_input_t *input )
     ev_set_priority(&main_event, EV_MAXPRI);
     
     /* Now wait for events to arrive */
-    printf("dare_client.c: ev_run() starting");
+    // printf("dare_client.c: ev_run() starting");
     ev_run(data.loop, 0);
 
     return 0;
@@ -393,7 +393,7 @@ consume_trace_cb( EV_P_ ev_timer *w, int revents )
 {
     int rc, i;
 	
-    printf("dare_client.c: Inside consume trace cb()\n");
+    // printf("dare_client.c: Inside consume trace cb()\n");
     
     /* Stop timer */
     w->repeat = 0;
@@ -448,7 +448,7 @@ rsm:
 repeat_trace:    
     /* Then apply all the commands to the RSM */
     if (measure_count == MEASURE_COUNT) {
-	printf("dare_client.c: In measure_count branch\n");
+	// printf("dare_client.c: In measure_count branch\n");
         /* First print the latency of this command */
         qsort(ticks, MEASURE_COUNT, sizeof(uint64_t), cmpfunc_uint64);
         for (i = 0; i < MEASURE_COUNT; i++) {
@@ -466,7 +466,7 @@ repeat_trace:
     }
     else {
         /* Repeat last command */
-	printf("dare_client.c: In repeat branch\n");
+	// printf("dare_client.c: In repeat branch\n");
         rc = fseek(data.trace_fp, current_trace_fp, SEEK_SET);
         if (0 != rc) {
             error_exit(1, log_fp, "Cannot reposition file pointer\n");
@@ -476,7 +476,7 @@ repeat_trace:
     //    HRT_GET_TIMESTAMP(data.t1);
     //}
 create_request:    
-    printf("dare_client.c: Creating clt_request()\n");
+    // printf("dare_client.c: Creating clt_request()\n");
     rc = dare_ib_create_clt_request();
     if (rc < 0) {
         /* Trace is empty */
@@ -545,13 +545,13 @@ poll_ud()
     }
     switch(type) {
         case CFG_REPLY:
-	    printf("Received CFG_Reply");
+	    // printf("Received CFG_Reply");
             if (CLT_TYPE_RECONF == data.input->clt_type) {
                 /* Received Reply from server - I'm done */
                 dare_client_shutdown();
             }
         case CSM_REPLY:
-            printf("Received CSM_Reply");
+            //printf("Received CSM_Reply");
             if (CLT_TYPE_LOOP == data.input->clt_type) {
                 //if (loop_first_req_done) {
                     /* Increase request counter */
