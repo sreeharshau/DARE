@@ -8,7 +8,7 @@ CC = gcc
 
 FLAGS        = -std=gnu99 -I./include -I./utils/rbtree/include -I/usr/include
 CFLAGS       = #-Wall -Wunused-function #-Wextra
-LDFLAGS      = /usr/lib/libibverbs.a
+LDFLAGS      = 
 
 PREFIX  = /users/s2udayas/DARE
 LIBPATH = $(PREFIX)/lib
@@ -55,7 +55,7 @@ rbtree_print:
 	@echo "##### BUILDING Red-Black Tree #####"
 	
 dare: FLAGS += -I/usr/lib/x86_64-linux-gnu//include
-dare: LDFLAGS += /usr/lib/x86_64-linux-gnu//libev.a
+dare: LDFLAGS += -lev
 dare: $(DARE) 
 $(DARE): $(RBTREE) dare_print $(OBJS) $(HEADERS) 
 	mkdir -pm 755 $(LIBPATH)
@@ -66,7 +66,7 @@ dare_print:
 	@echo "##### BUILDING DARE #####"
 
 test: FLAGS += -I/usr/lib/x86_64-linux-gnu//include
-test: LDFLAGS +=  -L$(LIBPATH) -ldare /usr/lib/x86_64-linux-gnu//libev.a -libverbs /usr/lib/libibverbs.a -lm 
+test: LDFLAGS +=  -L$(LIBPATH) -ldare -lev -libverbs -lm 
 test: $(SRV_TEST) $(CLT_TEST) $(MPI_LAUNCH)
 $(SRV_TEST): srv_test_print $(SRV_TEST_OBJS) $(HEADERS) $(DARE)
 	mkdir -pm 755 $(BINDIR)
