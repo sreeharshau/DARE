@@ -1999,7 +1999,7 @@ send_request:
     if (CLT_TYPE_RTRACE == CLT_DATA->input->clt_type) {
         HRT_GET_TIMESTAMP(CLT_DATA->t1);
     }
-    printf("dare_ibv_ud.c: Sending clt_request()\n");
+    // printf("dare_ibv_ud.c: Sending clt_request()\n");
     return send_clt_request(len);
 }
 
